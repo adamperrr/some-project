@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
-  lokalny-keycloak:
+  local-keycloak:
     image: quay.io/keycloak/keycloak:latest
-    container_name: lokalny-keycloak
+    container_name: local-keycloak
     ports:
       - "8080:8080"
     environment:
