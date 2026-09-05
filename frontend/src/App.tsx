@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const keycloakBaseUrl = "http://localhost:8080";
-const keycloakRealm = "master";
-const keycloakClientId = "frontend";
+const keycloakRealm = "some-project";
+const keycloakClientId = "my-local-app";
 const redirectUri = window.location.origin;
 const tokenStorageKey = "keycloak_token";
 const verifierStorageKey = "keycloak_pkce_verifier";

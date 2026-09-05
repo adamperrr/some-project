@@ -1,0 +1,22 @@
+{
+  "realm": "some-project",
+  "enabled": true,
+  "displayName": "Some project",
+  "clients": [
+    {
+      "clientId": "my-local-app",
+      "name": "Some project frontend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*", "http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:5173", "http://localhost:3000"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ]
+}

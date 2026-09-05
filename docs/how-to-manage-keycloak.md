@@ -1,45 +1,98 @@
 # How to manage Keycloak
 
-1. Run `docker compose up -d`
-2. In the browser open `http://localhost:8080` and login using `admin / admin`
-3. Create a Realm (Context) e.g. `some-project`
+## Start the local instance
 
-- Click `Manage realms`
-- Click `Create realm`
-- Set name
-- Click `Create`
+From the repository root run:
 
-4. Create a Client
+```bash
+docker compose up -d
+```
 
-- Click `Clients`
-- Click `Create client`
-    - `Client ID`: e.g. `my-local-app`
-    - `Client Protocol`: `openid-connect`
-    - `Access Type / Capability Config`: Use `Standard Flow` (Code Grant)
-    - `Valid redirect URIs`: `http://localhost:3000/redirect`
+The Compose file imports the realm configuration from
+`keycloak/realm-export.json` automatically. It creates:
 
-5. Create a user in the realm
+- realm: `some-project`
+- client: `my-local-app`
+- redirect URIs for `http://localhost:5173` and `http://localhost:3000`
 
-- Make sure that current realm is `some-project` (in left upper corner)
-- Click `Users`
-- Create a user
-- Go to user's `Credentials` tab and set a password
+Open `http://localhost:8080` and log in to the admin console with:
 
-6. Login and get a token
+```text
+admin / admin
+```
 
-- Go to the browser and go to: `http://localhost:8080/realms/some-project/protocol/openid-connect/auth?client_id=my-local-app&response_type=code&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fredirect`
-- After logging in you will be redirected to `http://localhost:3000/redirect?session_state=1arzJOkswkvcjp_CDYRAIRWZ&iss=http%3A%2F%2Flocalhost%3A8080%2Frealms%2Fsome-project&code=2bc9de26-4d89-46f0-8139-e24413994f50.1arzJOkswkvcjp_CDYRAIRWZ.d13e90d5-d595-47da-a0b1-030999b28a5a` where value of `code` will be used to get a token.
-- To get a token execute: 
+## Create a local user
 
-    ```powershell
-    Invoke-RestMethod `
-    -Method Post `
-    -Uri "http://localhost:8080/realms/some-project/protocol/openid-connect/token" `
-    -ContentType "application/x-www-form-urlencoded" `
-    -Body @{
-        client_id    = "my-local-app"
-        grant_type   = "authorization_code"
-        code         = "THE_CODE"
-        redirect_uri = "http://localhost:3000/redirect"
-    }
-    ```
+The realm and client are imported automatically, but users are not stored in
+the repository. In the admin console:
+
+1. Select the `some-project` realm.
+2. Open **Users** and create a user.
+3. Open the user's **Credentials** tab and set a password.
+
+The frontend can then be started with:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open `http://localhost:5173` and click **Login**.
+
+## Manual configuration
+
+If you want to configure Keycloak from the admin console instead of using the
+realm export:
+
+1. Open `http://localhost:8080` and log in with `admin / admin`.
+2. Open **Manage realms** and select **Create realm**.
+3. Set the realm name to `some-project` and click **Create**.
+4. Open **Clients** and click **Create client**.
+5. Set **Client ID** to `my-local-app`.
+6. Keep the protocol as `openid-connect` and enable **Standard Flow**.
+7. Configure these redirect and origin values:
+
+   ```text
+   Valid redirect URIs: http://localhost:5173/*
+   Web origins: http://localhost:5173
+   ```
+
+8. Keep client authentication disabled. The frontend is a public client and
+   uses Authorization Code with PKCE.
+9. In the `some-project` realm, open **Users**, create a user, and set the
+   password in the user's **Credentials** tab.
+
+For a manual authorization-code test, open this URL in the browser:
+
+```text
+http://localhost:8080/realms/some-project/protocol/openid-connect/auth?client_id=my-local-app&response_type=code&scope=openid&redirect_uri=http%3A%2F%2Flocalhost%3A5173
+```
+
+After login, copy the `code` query parameter from the redirect URL and use it
+to request a token:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:8080/realms/some-project/protocol/openid-connect/token" `
+  -ContentType "application/x-www-form-urlencoded" `
+  -Body @{
+	 client_id = "my-local-app"
+	 grant_type = "authorization_code"
+	 code = "THE_CODE"
+	 redirect_uri = "http://localhost:5173"
+  }
+```
+
+## Re-import after changing the export
+
+Keycloak does not overwrite an already existing realm during import. To
+recreate the local container from the current export:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+If a persistent Keycloak volume is added later, remove that volume before
+recreating the realm.
