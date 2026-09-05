@@ -84,7 +84,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("error_description")) return params.get("error_description") ?? "";
+    if (params.get("error_description"))
+      return params.get("error_description") ?? "";
     if (
       params.get("code") &&
       params.get("state") !== sessionStorage.getItem(stateStorageKey)
@@ -106,7 +107,11 @@ function App() {
       .then((tokenResponse) => {
         sessionStorage.setItem(tokenStorageKey, tokenResponse.access_token);
         setToken(tokenResponse.access_token);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       })
       .catch((tokenError: unknown) => setError(getErrorMessage(tokenError)))
       .finally(() => {
