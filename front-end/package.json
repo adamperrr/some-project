@@ -1,12 +1,15 @@
 {
   "name": "some-project-front-end",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite --host localhost --port 3000",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host localhost --port 3000"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
   }
 }

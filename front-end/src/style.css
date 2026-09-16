@@ -1,0 +1,33 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #17202a;
+  background: #eef3f7;
+}
+
+body {
+  margin: 0;
+}
+
+.container {
+  max-width: 32rem;
+  margin: 15vh auto;
+  padding: 2rem;
+  background: white;
+  border: 1px solid #d7e0e8;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgb(23 32 42 / 10%);
+}
+
+button {
+  margin-right: 0.5rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  background: #1769aa;
+  cursor: pointer;
+}
+
+button[hidden] {
+  display: none;
+}
