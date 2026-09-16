@@ -8,7 +8,7 @@ const stateStorageKey = "keycloak_state";
 
 const loginButton = document.querySelector<HTMLButtonElement>("#login-button")!;
 const logoutButton = document.querySelector<HTMLButtonElement>("#logout-button")!;
-const status = document.querySelector<HTMLParagraphElement>("#status")!;
+const statusParagraph = document.querySelector<HTMLParagraphElement>("#status")!;
 
 const authorizationEndpoint = `${keycloakBaseUrl}/realms/${realm}/protocol/openid-connect/auth`;
 const tokenEndpoint = `${keycloakBaseUrl}/realms/${realm}/protocol/openid-connect/token`;
@@ -70,7 +70,8 @@ async function exchangeCodeForToken(code: string): Promise<void> {
   }
 
   const tokenResponse: { access_token: string } = await response.json();
-  localStorage.setItem(tokenStorageKey, tokenResponse.access_token);
+  sessionStorage.setItem(tokenStorageKey, tokenResponse.access_token);
+  localStorage.removeItem(tokenStorageKey);
   sessionStorage.removeItem(verifierStorageKey);
   sessionStorage.removeItem(stateStorageKey);
   window.history.replaceState({}, document.title, "/");
@@ -96,16 +97,37 @@ async function handleCallback(): Promise<void> {
   await exchangeCodeForToken(code);
 }
 
+function getGivenNameFromToken(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) {
+      return null;
+    }
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const decoded = JSON.parse(atob(padded)) as { given_name?: string; name?: string };
+
+    return decoded.given_name ?? decoded.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function updateUi(): void {
-  const loggedIn = localStorage.getItem(tokenStorageKey) !== null;
-  status.textContent = loggedIn ? "Zalogowano. Token jest w localStorage." : "Nie zalogowano";
+  const token = sessionStorage.getItem(tokenStorageKey) ?? localStorage.getItem(tokenStorageKey);
+  const loggedIn = token !== null;
+  const givenName = token ? getGivenNameFromToken(token) : null;
+
+  status.textContent = givenName ? `Witaj, ${givenName}!` : loggedIn ? "Witaj!" : "Nie zalogowano";
   loginButton.hidden = loggedIn;
   logoutButton.hidden = !loggedIn;
 }
 
 loginButton.addEventListener("click", () => void startLogin());
 logoutButton.addEventListener("click", () => {
-  localStorage.removeItem(tokenStorageKey);
+  sessionStorage.removeItem(tokenStorageKey);
+  sessionStorage.removeItem(tokenStorageKey);
   updateUi();
 });
 
